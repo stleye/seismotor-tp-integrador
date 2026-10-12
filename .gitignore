@@ -1,0 +1,11 @@
+# Compilacion y configuracion del IDE: el proyecto se genera desde inmp441.ioc
+Debug/
+Release/
+.settings/
+.project
+.cproject
+.mxproject
+*.launch
+# Grabaciones
+*.wav
+.DS_Store
