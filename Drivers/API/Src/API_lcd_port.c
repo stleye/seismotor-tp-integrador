@@ -11,6 +11,9 @@
 
 extern I2C_HandleTypeDef hi2c1;
 
+/* La HAL espera la direccion de 7 bits corrida un lugar: el bit 0 lo usa para R/W */
+#define LCD_I2C_ADDR (LCD_DIR<<1)
+
 
 /**
   * @brief  LCD_Write_Byte Funciòn que saca el byte a escribir al LCD por I2C, en caso de trabajar de forma paralela reemplazar por
@@ -23,8 +26,22 @@ extern I2C_HandleTypeDef hi2c1;
 */
 
 
+/**
+  * @brief  LCD_Delay demora bloqueante en milisegundos, para los comandos lentos del LCD
+  * @param  ms: milisegundos a esperar
+  * @return void
+*/
+void LCD_Delay(uint32_t ms){
+	HAL_Delay(ms);
+}
+
+/**
+  * @brief  LCD_Write_Byte Funciòn que saca el byte a escribir al LCD por I2C
+  * @param  uint8_t valor a sacar por el puerto
+  * @return void
+*/
 void LCD_Write_Byte(uint8_t valor){
-	if(HAL_I2C_Master_Transmit (&hi2c1,LCD_DIR<<1,&valor, sizeof(valor),HAL_MAX_DELAY)!=HAL_OK)Error_Handler();
+	if(HAL_I2C_Master_Transmit (&hi2c1,LCD_I2C_ADDR,&valor, sizeof(valor),HAL_MAX_DELAY)!=HAL_OK)Error_Handler();
 
 }
 

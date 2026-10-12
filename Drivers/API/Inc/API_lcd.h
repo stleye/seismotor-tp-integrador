@@ -59,6 +59,7 @@ typedef enum
 
 //MANEJO DE NIBBLES
 #define HIGH_NIBBLE 0xf0
+#define LOW_NIBBLE_MASK 0x0f
 #define LOW_NIBBLE 4
 
 //LINEAS DEL LCD

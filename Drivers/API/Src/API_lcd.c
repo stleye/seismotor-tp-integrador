@@ -40,9 +40,15 @@ _Bool Init_Lcd(void){
    Envia4bitsLcd(COMANDO_INI1,CONTROL);
    DelayLcd(DELAY1ms);
    Envia4bitsLcd(COMANDO_INI1,CONTROL);
+   DelayLcd(DELAY1ms);
    Envia4bitsLcd(COMANDO_INI2,CONTROL);
-   for(uint8_t i=0;i<sizeof(LCD_INIT_CMD);i++)ControlLcd(LCD_INIT_CMD[i]);
-   DelayLcd(DELAY2ms);
+   DelayLcd(DELAY1ms);
+   /* La lista incluye RETURN_HOME y CLR_LCD, que tardan 1.52 ms en ejecutarse: como
+      Envia4bitsLcd ya no espera, se deja tiempo despues de cada comando de la lista. */
+   for(uint8_t i=0;i<sizeof(LCD_INIT_CMD);i++){
+	   ControlLcd(LCD_INIT_CMD[i]);
+	   DelayLcd(DELAY2ms);
+   }
    return LCD_OK;
 
 }
@@ -58,7 +64,7 @@ _Bool Init_Lcd(void){
 
 
 static void DelayLcd(uint32_t demora){
-	  HAL_Delay(demora);
+	  LCD_Delay(demora);
 }
 
 /**
@@ -113,8 +119,8 @@ void DatoAsciiLcd (uint8_t dato){
 
 void DatoBCD (uint8_t dato){
 
-	  DatoAsciiLcd((((dato)&0xf0)>>4));
-	  DatoAsciiLcd(((dato)&0x0f));
+	  DatoAsciiLcd((((dato)&HIGH_NIBBLE)>>LOW_NIBBLE));
+	  DatoAsciiLcd(((dato)&LOW_NIBBLE_MASK));
 
 }
 
@@ -145,10 +151,13 @@ void Envia8bitsLcd (uint8_t valor,_Bool tipo){
 
 static void Envia4bitsLcd (uint8_t valor,_Bool tipo){
 
+	/* Sin esperas: el pulso de EN tiene que durar 450 ns y los comandos comunes se
+	   ejecutan en 37 us, pero cada escritura I2C a 100 kHz (direccion + dato) ya tarda
+	   ~0.2 ms. Las esperas de 1 ms que habia aca hacian que cada caracter tardara ~8 ms
+	   y frenaban el envio del audio; sin ellas tarda ~0.8 ms.
+	   Los comandos lentos (clear, home, inicializacion) esperan donde se los llama. */
 	LCD_Write_Byte(valor+tipo+EN+BL);
-	DelayLcd(DelayTime);
 	LCD_Write_Byte(valor+tipo+BL);
-	DelayLcd(DelayTime);
 }
 
 /**
